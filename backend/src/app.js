@@ -1,5 +1,4 @@
 const express      = require('express');
-const helmet       = require('helmet');
 const cors         = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit    = require('express-rate-limit');
@@ -17,8 +16,6 @@ function createApp() {
   const app = express();
 
   app.set('trust proxy', 1);
-
-  app.use(helmet());
 
   const allowedOrigins = env.CORS_ORIGINS.split(',').map((o) => o.trim());
   app.use(
