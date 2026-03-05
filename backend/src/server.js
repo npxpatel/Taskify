@@ -3,11 +3,15 @@ const { env }             = require('./config/env');
 const { connectDB, disconnectDB }         = require('./config/database');
 const { connectRedis, disconnectRedis }   = require('./services/redis');
 const { connectRabbitMQ, disconnectRabbitMQ } = require('./services/rabbitmq');
+const { startStaleJobReminder } = require('./jobs/staleJobReminder');
 
 async function bootstrap() {
   await connectDB();
   await connectRedis();
   await connectRabbitMQ();
+
+  // Start cron jobs
+  startStaleJobReminder();
 
   const app = createApp();
 
