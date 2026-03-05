@@ -4,9 +4,9 @@ const { User }        = require('../models/User');
 const { Otp }         = require('../models/Otp');
 const { AppError }    = require('../utils/AppError');
 const { signToken }   = require('../utils/jwt');
-const { sendOtpEmail } = require('../services/mailer');
 const { COOKIE_OPTIONS } = require('../config/env');
 const { registerSchema, loginSchema, forgotSchema, resetSchema } = require('../types');
+const { publishEmailNotification } = require('../services/rabbitmq');
 
 async function register(req, res, next) {
   try {
@@ -79,7 +79,8 @@ async function forgotPassword(req, res, next) {
     await Otp.deleteMany({ email });
     await Otp.create({ email, otp, expiresAt });
 
-    await sendOtpEmail(email, otp);
+    // Publish to queue — email worker handles delivery asynchronously
+    publishEmailNotification({ type: 'otp', to: email, data: { otp } });
 
     return res.json({ success: true, message: 'If that email exists, an OTP has been sent' });
   } catch (err) {
