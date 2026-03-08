@@ -2,23 +2,14 @@ import { useEffect, useState, useMemo } from "react";
 import { tasksApi, Task } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { Plus, Loader2, Pencil, Trash2, CalendarIcon } from "lucide-react";
+import { Plus, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { format, isToday, isTomorrow, isPast, isFuture, startOfDay } from "date-fns";
+import { format, isToday, isTomorrow, isPast, startOfDay } from "date-fns";
+import { cn } from "@/lib/utils";
+import { TaskDialog } from "@/components/TaskDialog";
 
 type TabFilter = "all" | "active" | "completed";
 
@@ -55,7 +46,6 @@ export default function TasksPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Partial<Task> & { taskId?: string }>(emptyTask());
   const [saving, setSaving] = useState(false);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   useEffect(() => {
     tasksApi.getAll()
@@ -167,53 +157,14 @@ export default function TasksPage() {
         )}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="glass-card border-glass-border">
-          <DialogHeader>
-            <DialogTitle>{editingTask.taskId ? "Edit Task" : "Add Task"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Title *</Label>
-              <Input value={editingTask.title || ""} onChange={(e) => setEditingTask((p) => ({ ...p, title: e.target.value }))} className="bg-secondary/50 border-glass-border" />
-            </div>
-            <div className="space-y-2">
-              <Label>Date *</Label>
-              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-secondary/50 border-glass-border", !editingTask.date && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {editingTask.date ? format(new Date(editingTask.date), "PP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={editingTask.date ? new Date(editingTask.date) : undefined} onSelect={(d) => { setEditingTask((p) => ({ ...p, date: d?.toISOString() || "" })); setDatePickerOpen(false); }} className="p-3 pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select value={editingTask.priority || "none"} onValueChange={(v) => setEditingTask((p) => ({ ...p, priority: v === "none" ? undefined : v as any }))}>
-                <SelectTrigger className="bg-secondary/50 border-glass-border"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea value={editingTask.description || ""} onChange={(e) => setEditingTask((p) => ({ ...p, description: e.target.value }))} className="bg-secondary/50 border-glass-border" />
-            </div>
-            <Button onClick={saveTask} className="w-full" disabled={saving}>
-              {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-              {editingTask.taskId ? "Update" : "Add"} Task
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TaskDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        task={editingTask}
+        onTaskChange={setEditingTask}
+        onSave={saveTask}
+        saving={saving}
+      />
     </div>
   );
 }

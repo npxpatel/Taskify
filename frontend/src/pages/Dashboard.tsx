@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Loader2, Briefcase, CheckSquare, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { format, isToday } from "date-fns";
+import { isToday } from "date-fns";
+import { TaskDialog } from "@/components/TaskDialog";
+
+const emptyTask = (): Partial<Task> => ({
+  title: "",
+  date: new Date().toISOString(),
+  priority: undefined,
+  description: "",
+  completed: false,
+});
 
 export default function DashboardPage() {
   const { toast } = useToast();
@@ -17,7 +21,7 @@ export default function DashboardPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
+  const [editingTask, setEditingTask] = useState<Partial<Task>>(emptyTask());
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -49,17 +53,13 @@ export default function DashboardPage() {
     }
   };
 
-  const addTask = async () => {
-    if (!newTitle.trim()) return;
+  const saveTask = async () => {
+    if (!editingTask.title?.trim() || !editingTask.date) return;
     setSaving(true);
     try {
-      const task = await tasksApi.create({
-        title: newTitle,
-        date: new Date().toISOString().split("T")[0],
-        completed: false,
-      });
-      setTasks((prev) => [...prev, task]);
-      setNewTitle("");
+      const created = await tasksApi.create(editingTask as Partial<Task>);
+      setTasks((prev) => [...prev, created]);
+      setEditingTask(emptyTask());
       setDialogOpen(false);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
@@ -101,25 +101,9 @@ export default function DashboardPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-foreground">Today's Tasks</h2>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add Task</Button>
-            </DialogTrigger>
-            <DialogContent className="glass-card border-glass-border">
-              <DialogHeader>
-                <DialogTitle>Add Quick Task</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Task title" className="bg-secondary/50 border-glass-border" onKeyDown={(e) => e.key === "Enter" && addTask()} />
-                </div>
-                <Button onClick={addTask} className="w-full" disabled={saving}>
-                  {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />} Add Task
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button size="sm" onClick={() => { setEditingTask(emptyTask()); setDialogOpen(true); }}>
+            <Plus className="h-4 w-4 mr-1" /> Add Task
+          </Button>
         </div>
 
         {todayTasks.length === 0 ? (
@@ -146,6 +130,15 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      <TaskDialog
+        open={dialogOpen}
+        onOpenChange={(v) => { setDialogOpen(v); if (!v) setEditingTask(emptyTask()); }}
+        task={editingTask}
+        onTaskChange={setEditingTask}
+        onSave={saveTask}
+        saving={saving}
+      />
     </div>
   );
 }
