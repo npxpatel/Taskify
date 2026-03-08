@@ -17,10 +17,12 @@ function createApp() {
 
   app.set('trust proxy', 1);
 
-  const allowedOrigins = env.CORS_ORIGINS.split(',').map((o) => o.trim());
+  const corsOrigins = env.CORS_ORIGINS.trim();
   app.use(
     cors({
-      origin:      allowedOrigins,
+      origin: corsOrigins === '*'
+        ? (origin, cb) => cb(null, origin || '*')
+        : corsOrigins.split(',').map((o) => o.trim()),
       credentials: true,
       methods:     ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     })
