@@ -3,6 +3,13 @@
 A job application tracker built for people who are actively job hunting and tired of maintaining a spreadsheet. Track every application, manage tasks around your search, and store email templates — all in one place.
 
 ---
+## Images for your reference
+<img width="1512" height="982" alt="Screenshot 2026-03-08 at 20 04 22" src="https://github.com/user-attachments/assets/5e73ca39-5e99-43d2-8ece-491a6063ce8d" />
+<img width="1512" height="982" alt="Screenshot 2026-03-08 at 20 03 24" src="https://github.com/user-attachments/assets/10fbcbf0-0b89-4b45-90b2-52e1efa863b9" />
+<img width="1512" height="982" alt="Screenshot 2026-03-08 at 20 03 42" src="https://github.com/user-attachments/assets/652fbe89-b67b-4e66-a335-eaa39ace7914" />
+<img width="1512" height="982" alt="Screenshot 2026-03-08 at 20 04 02" src="https://github.com/user-attachments/assets/fa0596b1-3906-409f-9290-924c68f5c1ec" />
+<img width="1512" height="982" alt="Screenshot 2026-03-08 at 20 04 09" src="https://github.com/user-attachments/assets/8ab22761-3841-4ca5-9894-b50ea6e801b4" />
+
 
 ## What it does
 
